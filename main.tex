@@ -9,6 +9,10 @@
 \usetikzlibrary{trees, positioning, arrows.meta}
 %\usepackage[a4paper, total={6in, 8in}]{geometry}
 
+\usepackage{tikz-cd} %diagramas comutativos
+\usetikzlibrary{babel} %conserta compatibilidade de labels de arrows do tikz-cd
+\usetikzlibrary{decorations.pathmorphing} % permite todos os tipos de arrows do tikz-cd
+
 \newtheorem{definition}{Definition}
 \newtheorem{example}{Example}
 \newtheorem{theorem}{Theorem}
@@ -50,7 +54,7 @@
 % In the previous post\todo{link} was introduced the idea of modeling transition systems using coalgebras $X \mapsto F(X)$, where $X$ is a set of states. Different choices of functors $F$ give us different flavors of transitions systems, and for well-behaved functors $F$, a determinization procedure induces a trace equivalence relation for the traces produced by these systems.
 % These well-behaved systems are precisely the $A$-automata with $M$-effects and observations in $O$, that is, $FM$-coalgebras for the Moore-automata functor $F = O\times(\mathunderscore)^A$, where the monad $M$ determines the type of transitions.
 
-% Consider, for example, the monad $\mathcal{C}$ of non-empty finitely generated convex sets of probability distributions. Intuitively, $\mathcal{C}$ models non-deterministic choice followed by probabilistic choice. (Note that $\mathcal{C}$ is not simply the composition of the classical monads for non-determinism and probability choice, since there is no distributive law to compose them.)
+% Consider, for example, the monad $\mathcal{C}$ of non-empty finitely generated convex sets of probability distributions. Intuitively, $\mathcal{C}$ models nondeterministic choice followed by probabilistic choice. (Note that $\mathcal{C}$ is not simply the composition of the classical monads for nondeterminism and probability choice, since there is no distributive law to compose them.)
 
 %     Rather than describing explicitly the unit and the multiplication of $\C$, we can use a presentation of $\C$: an algebraic theory $(\Sigma, E)$, where $\Sigma$ is a signature (a set of symbols with prescribed arity) and $E$ is a set of equations (the axioms of the theory), such that $\C$ is isomorphic to the term monad $T_{(\Sigma, E)}$, the $\Set$-monad mapping a set of variables $X$ to the set of $\Sigma$-terms with variables in $X$, modulo equations in $E$. 
 
@@ -97,7 +101,7 @@
 % where $\operatorname{inl} : X \to X+1$ and $\operatorname{inr} : 1 \to X+1$ are the coproduct injections for $X+1$. 
 % \end{definition}
 
-% Intuitively, $\iota$ interprets "either run a $M$-computation with effects in $M$ or terminate" as "run a computation with effects in $M$ that can terminates". This yields the monad $\C(+1)$ of of non–empty finitely generated convex sets of
+% Intuitively, $\iota$ interprets "either run a $M$-computation with effects in $M$ or terminate" as "run a computation with effects in $M$ that can terminates". This yields the monad $\C(+1)$ of of non-empty finitely generated convex sets of
 % subdistributions, which admits as presentation the theory $\Th_{C S}^*$, which is $\Th_{C S}$ with an added symbol $*$ of arity $0$, and the same equations.
 
 % The second distributive law is more specific to $\C$:
@@ -137,7 +141,7 @@
 % $$ P ::= \mathbf{nil} \ | \  P_1 \overline \oplus P_2\ |\  P_1 \overline +_p P_2\ | \ a.P, a \in A$$
 % where $A$ is a set of labels.
 
-% Here, $\mathbf{nil}$ is the terminated process and $a.P$ performs action $a$ and continue as $P$. Intuitively, a program can execute some actions in $A$ or branch in a non-deterministically or probabilistic manner. However, it remains to define precisely the transition semantics of these processes (essentially the semantics for branching).
+% Here, $\mathbf{nil}$ is the terminated process and $a.P$ performs action $a$ and continue as $P$. Intuitively, a program can execute some actions in $A$ or branch in a nondeterministically or probabilistic manner. However, it remains to define precisely the transition semantics of these processes (essentially the semantics for branching).
 
 % We now define inductively an operational semantics on process terms, by assigning to each term $P$ its continuation $t \in T_{\Th^{*}_{CS}}(Proc) \cong \C(Proc+1)$, denoted $P \rightarrowtail t$: a term in the free model of $\Th^{*}_{CS}$ over process terms, representing the control flow of the program.
 
@@ -167,8 +171,16 @@
 
 % For example, $P$ and $a.(b.\mathbf{nil} +_{\frac12} \mathbf{nil})$ are provably equal, i.e. behaviorally equivalent, for the transition semantics  $Proc \to \C^\downarrow(Proc)$ and  $Proc \to \C(Proc)+1$, but not for $Proc \to \C(Proc+1)$!
 
-In a previous post~\todo{link to the blog by Alyssa and Max}, we learned how transition systems could be modeled as coalgebras \(S \to F(S)\), with \(S\) a set of states, and \(F\) a functor. In addition, we saw how to obtain a good notion of equivalence for those systems: determinization followed by bisimulation! Of all the systems one could think of, automata strike a good balance: they are very expressive, while still being described by an unifying theory.  
-An \(A\)-automata with \(M\)-effects and observations in \(O\) is a coalgebras $S \to O \times (MS)^A$. The set $O$ describes all the observations one can make about a state in $S$, while functor $M$ gives some flavor to the transitions... 
+Remember the Pacman game from the blog post~\todo{TODO cite previous blog post}? The authors applied a determinization procedure to it, but did not draw the resulting coalgebra. In this post, we introduce different algebraic presentations of monads that model nondeterminism and probability in order (among other niceties) to draw that determinized automaton. Determinization is the first step for computing equivalences of automata. In the second part of this blog, we go beyond equalities and define a distance between automata, without losing our previously defined
+$\cat{Set}$-monads, nor their presentations.
+
+\section{Algebraic presentations of monads for automata }
+
+This blog post builds on the great post~\todo{link to the blog by Alyssa and Max}, and we advise reading it before proceeding. In that post, we learned how transition systems can be modeled as coalgebras $S \to F(S)$, with $S$ a set of states and $F$ a functor. We also encountered automata and a notion of equivalence between automata given by determinization followed by bisimulation. Recall that an automaton with $M$-effects, labels in $A$, and observations in $O$ is a coalgebra $S \to O \times (MS)^A$. Each transition is given a label from the set $A$, the set $O$ describes all the observations one can make about a state in $S$, and the functor $M$ gives some flavor to the transitions...
+
+%determinization \(O\) 
+
+
 
 Consider for example the monad \(\mathcal{C}\) of non-empty finitely generated convex sets of probability distributions. Intuitively, \(\mathcal{C}\) models nondeterministic choice followed by probabilistic choice. For example, we can model Alyssa's Pacman game! %(Note that \(\mathcal{C}\) is not simply the composition of the classical monads for nondeterminism and probability, because there is no distributive law to compose them!)
 
@@ -177,34 +189,37 @@ Consider for example the monad \(\mathcal{C}\) of non-empty finitely generated c
 \end{center}
 
 
-Rather than writing down unit and multiplication explicitly, we will use a \emph{presentation} of \(\mathcal{C}\): an algebraic theory \((\Sigma, E)\) such that \(\mathcal{C}\) is isomorphic to the term monad \(T_{(\Sigma, E)}\) mapping sets of variables to \(\Sigma\)-terms modulo \(E\). Equivalently, the Eilenberg-Moore category of \(\mathcal{C}\)-algebras is concretely equivalent to the category of models of \((\Sigma, E)\) (e.g. models of the theory of rings are simply rings!).
+Rather than writing down unit and multiplication explicitly, we will use a \emph{presentation} of \(\mathcal{C}\): an algebraic theory \((\Sigma, E)\) such that \(\mathcal{C}\) is isomorphic to the monad mapping sets of variables to \(\Sigma\)-terms modulo \(E\). Intuitively, a presentation of $M$ is to algebras of $M$ what the theory of rings is to rings. The $M$-algebras are \emph{models} of  the presentation.
+
+%Equivalently, the Eilenberg-Moore category of \(\mathcal{C}\)-algebras is concretely equivalent to the category of models of \((\Sigma, E)\) (e.g. models of the theory of rings are simply rings!).
 
 We will see that handling \(\mathcal{C}\) via a presentation is very convenient. %as it gives equational tools to reason about \(\mathcal{C}\). 
-For instance, to determinize an automaton with \(M\)-effects and \(O\)-observations, we need an algebra \(MO \to O\). A presentation tells us exactly what structure \(O\) must to carry! 
+For instance, to determinize an automaton with \(M\)-effects and \(O\)-observations, we need an algebra \(MO \to O\). A presentation tells us exactly what structure \(O\) must carry! 
 
-For $\C$, it was formally proved in~\todo{cite paper} that this monad is presented by the theory of convex semilattices, whose signature
+For $\C$, it was shown in~\todo{cite paper(s)!} that this monad is presented by the theory of convex semilattices, whose signature
 is made of a binary operation \(\oplus\) (nondeterministic choice), and for each \(p \in (0,1)\) a binary operation \(+_p\) (probabilistic choice with probability \(p\)), and whose axioms are:
 \[
 \begin{aligned}
 &\text{(A)} && x \oplus (y \oplus z) = (x \oplus y) \oplus z \\
 &\text{(C)} && x \oplus y = y \oplus x \\
 &\text{(I)} && x \oplus x = x \\
-&\text{(A}_p\text{)} && (x +_q y) +_p z = x +_{pq} (y +_{\frac{1-q}{1-p}} z) \\
+&\text{(A}_{q,p}\text{)} && (x +_q y) +_p z = x +_{pq} (y +_{\frac{1-q}{1-p}} z) \\
 &\text{(C}_p\text{)} && x +_p y = y +_{1-p} x \\
 &\text{(I}_p\text{)} && x +_p x = x \\
 &\text{(D)} && x +_p (y \oplus z) = (x +_p y) \oplus (x +_p z)
 \end{aligned}
 \]
 
-With a presentation of $\mathcal C$, we get a language to describe the new states of the determinization of a $\mathcal C$-automata: each determinized state is a finite expression like  $\mathtt{Pacman}$ or $\mathtt{win} +_{3/4} \mathtt{lose}$, and the presentation tells us how to compute the transitions:
-For ``simples'' states like $\mathtt{Pacman}$, we just need to provide the expression corresponding to the right combination of nondeterminism and probability:
+With a presentation of $\mathcal C$, we get a language to describe the new states of the determinization of a $\mathcal C$-automaton: each determinized state is a finite expression made of the original states and the operations in the signature like  $\mathtt{Pacman}$ or $\mathtt{win} +_{3/4} \mathtt{lose}$. The presentation tells us how to compute the transitions:
+For ``simple'' states like $\mathtt{Pacman}$, we just read from the automaton the expression corresponding to the right combination of nondeterminism and probability:
  \begin{align*}
      &\mathtt{Pacman}\\
     &\downarrow \mathtt{play}\\
     (\mathtt{win} +_{0.75} \mathtt{lose}) \oplus  &((\mathtt{win} +_{0.5} \star) +_{0.5} \mathtt{lose})\\ 
 \end{align*}
 
-For ``complex'' states like the one above, we just replace every occurrences of simple states by the complex states we get after transitioning from these simple states: 
+For ``complex'' states like the one above, the theory of presentations tell us that  %\todo{ana: may be misleading} 
+every occurrence of simple states can be replaced by the complex state it transitions to, e.g.:
 
 \begin{align*}
     (\mathtt{win} +_{0.75} \mathtt{lose}) \oplus  &((\mathtt{win} +_{0.5} \star) +_{0.5} \mathtt{lose})\\
@@ -212,11 +227,12 @@ For ``complex'' states like the one above, we just replace every occurrences of 
     (\mathtt{Pacman} +_{0.75} \star) \oplus  &((\mathtt{Pacman} +_{0.5} \star) +_{0.5} \star)
 \end{align*}
 
-Finally, we can use the equations of the presentation to simply this expression a bit:
+Finally, we can use the equations of the presentation to simplify this expression a bit:
 
 \begin{align*}
-    (\mathtt{Pacman} +_{0.75} \star) \oplus  ((\mathtt{Pacman} +_{0.5} \star) +_{0.5} \star)\\
-    = (\mathtt{Pacman} +_{0.75} \star) \oplus (\mathtt{Pacman} +_{0.25} \star)
+    (&\mathtt{Pacman} +_{0.75} \star) \oplus  ((\mathtt{Pacman} +_{0.5} \star) +_{0.5} \star)\\
+    &= (\mathtt{Pacman} +_{0.75} \star) \oplus  (\mathtt{Pacman} +_{0.25} (\star +_{1} \star) & ({A}_{0.5, 0.5})\\
+    &= (\mathtt{Pacman} +_{0.75} \star) \oplus (\mathtt{Pacman} +_{0.25} \star) & (\text{I})
 \end{align*} 
 
 % We call this theory \(\Th_{CS}\).
@@ -233,13 +249,20 @@ Finally, we can use the equations of the presentation to simply this expression 
 
 
 \subsection{Modeling termination.}
-The way we modeled termination with a terminal state $\star$ was a bit ad hoc, though. A more systematic way of modeling, which also behaves better with complex sets of observations, is to compose a monad $M$ modeling certain effects with the termination monad \(+1: X \mapsto X \sqcup \{\star\}\), where \(\star\) signals termination. Indeed, there is always a monad distribution law \(\iota \colon M+1 \Rightarrow M(+1)\). For $\mathcal C$, this gives the monad \(\mathcal{C}(+1)\) of non-empty finitely generated convex sets of \emph{subdistributions}. Since \(\mathcal{C}(+1)\) is again a monad, we can then replace $\mathcal C$ by \(\mathcal{C}(+1)\) in our algebraic formulation, and everything works! 
-Interestingly, this monad is presented by the theory of \emph{pointed} convex semilattices, i.e., we add an extra symbol $\star$ in the signature. 
+The way we modeled ragequit and actions not applying on certain states using a terminal state $\star$ is a bit ad hoc, though. A more systematic way of modeling termination (e.g., a program returning or crashing) which also behaves better with more complex sets of observations, is to compose the monad $M$ modeling certain effects with the $+1$ termination monad, which acts on sets by adding a distinct element $\star$ representing termination. This yields a new monad $M(+1)$. Having a monad is useful: we can use the same automaton formalism, but with termination. 
+%to   \(+1: X \mapsto X \sqcup \{\star\}\), where \(\star\) \todo{ana:$\sqcup$ is bad here, +}signals termination. 
+%Indeed, there is always a monad distributive law \(\iota \colon M+1 \Rightarrow M(+1)\). 
+For $\mathcal C$, this gives the monad \(\mathcal{C}(+1)\) of non-empty finitely generated convex sets of \emph{subdistributions}, i.e., a probability distribution whose total mass is less or equal to $1$ (instead of exactly $1$).
 
-However, there are different ways to model termination with the monad $\mathcal C$, for example termination may be a nondeterministic alternative: a state either transition to an non-terminating effectful state, or terminates outright. This is another point where presentation shines: it is easy to add additional axioms to the theory of pointed convex semilattices to refine the meaning of termination. However, we are not guaranteed that these modified theory still presents a monad... Nevertheless, it does when adding either the bottom axiom $(\bot)$, or both $(\bot)$ and the black hole axiom $(BH)$!
+Interestingly, this monad is presented by the theory of \emph{pointed} convex semilattices, i.e., we add an extra symbol $\star$ in the signature with no additional equations. 
+
+However, there are different ways to model termination with the monad $\mathcal C$: for example, termination may be a nondeterministic alternative: a state either transitions to a non-terminating effectful state, or terminates outright. In our example, however, termination is probabilistic: some actions have a chance to lead to termination every time they are applied.
+
+
+This is another point where algebraic presentations shine: it is easy to add additional axioms to the theory of pointed convex semilattices to refine the meaning of termination, and it again gives a presentation of some monad. However, there is not always a nice semantic description of these monads... Nevertheless, it does when adding either the bottom axiom $(\bot)$, or both $(\bot)$ and the black hole axiom $(BH)$!
 \begin{align*}
-    &\bot = \{x \oplus \star = x\} &BH = \{x +_p \star = \star \mid p \in (0, 1)\}
-\end{align*}
+    &\{x \oplus \star = x\}\ (\bot) &\{x +_p \star = \star \mid p \in (0, 1)\}\ (BH)
+\end{align*} %\todo{ana:unusual way of writing axioms, better is axiom and then ($\bot$) - not in a set}
 The resulting monads are called $\mathcal C+1$ and $\mathcal C^\downarrow$.
     
 % For the two following well known axioms $(\bot)$ and $(BH)$, we again  
@@ -255,7 +278,7 @@ The resulting monads are called $\mathcal C+1$ and $\mathcal C^\downarrow$.
 
 % The two monads model termination differently: in \(\mathcal{C}(+1)\), probabilistic choice can lead to termination (a subdistribution may have total mass \(<1\)), whereas in \(\mathcal{C}+1\), termination is a global, nondeterministic alternative: a state either transitions to a proper \(\mathcal{C}\)-computation or terminates outright.
 
-% One of the main results of the paper is a presentation for \(\mathcal{C}+1\): the theory \(\Th_{CS}^{\bot, BH}\) extends \(\Th_{CS}^*\) with the bottom axiom \(\bot = \{x \oplus \star = x\}\) and the black-hole axiom \(BH = \{x +_p \star = \star \mid p \in (0, 1)\}\). The bottom axiom means that non-deterministically choosing between \(x\) and termination is just \(x\). The black-hole axiom says that probabilistically choosing between \(x\) and termination with any positive probability results in termination.
+% One of the main results of the paper is a presentation for \(\mathcal{C}+1\): the theory \(\Th_{CS}^{\bot, BH}\) extends \(\Th_{CS}^*\) with the bottom axiom \(\bot = \{x \oplus \star = x\}\) and the black-hole axiom \(BH = \{x +_p \star = \star \mid p \in (0, 1)\}\). The bottom axiom means that nondeterministically choosing between \(x\) and termination is just \(x\). The black-hole axiom says that probabilistically choosing between \(x\) and termination with any positive probability results in termination.
 
 % This black-hole axiom may be too coarse for some systems. Could we then keep only the bottom axiom? It turns out that \(\Th_{CS}^{\bot}\) presents the monad \(\mathcal{C}^\downarrow\) of non-empty finitely generated \(\bot\)-closed convex sets of subdistributions, where a set \(S\) is \(\bot\)-closed if whenever \(\phi \in S\), any subdistribution \(\psi\) with \(\psi(x) \le \phi(x)\) for all \(x\) also belongs to \(S\).
 
@@ -264,7 +287,7 @@ The resulting monads are called $\mathcal C+1$ and $\mathcal C^\downarrow$.
 % \[
 % P ::= \mathbf{nil} \mid P_1 \mathbin{\overline{\oplus}} P_2 \mid P_1 \mathbin{\overline{+}_p} P_2 \mid a.P, \quad a \in A
 % \]
-% Here, \(\mathbf{nil}\) represents the terminated process, \(a.P\) performs action \(a\) and continues as \(P\), and  \(\overline{\oplus}\) and \(\overline{+}_p\) are non-deterministic and probabilistic branchings, respectively.
+% Here, \(\mathbf{nil}\) represents the terminated process, \(a.P\) performs action \(a\) and continues as \(P\), and  \(\overline{\oplus}\) and \(\overline{+}_p\) are nondeterministic and probabilistic branchings, respectively.
 
 % We give a more formal semantics to these processes, we inductively assign to each process \(P\) a continuation \(t \in T_{\Th_{CS}^*}(Proc) \cong \mathcal{C}(Proc+1)\), written \(P \rightarrowtail t\):
 % \[
@@ -288,14 +311,13 @@ The resulting monads are called $\mathcal C+1$ and $\mathcal C^\downarrow$.
 
 % Each choice of transition semantics induces a notion of equivalence of processes. A major benefit of monad presentations is that to prove two processes \(P_1\) and \(P_2\) are behaviorally equivalent under a given semantics, it suffices to show that their (iterated) continuations are equal in the relevant equational theory. For instance, the continuations \(P\) and \(a.(b.\mathbf{nil} +_{\frac12} \mathbf{nil})\) are provably equal, hence behaviorally equivalent, in the semantics \(Proc \to \mathcal{C}^\downarrow(Proc)\) and \(Proc \to \mathcal{C}(Proc)+1\), but \emph{not} in \(Proc \to \mathcal{C}(Proc+1)\).
 
-\section{From equivalences to distances between automatons}
+\section{From equivalences to distances between automata}%\todo{ana:singular: automaton, plural: automata. Yes, I think t should be plural in the section title, unless i(m mistaken?}
 
 %\subsection{Example (why should we care about program distance)}
-Now here comes the best part: while equivalences of programs are nice, distance between programs are even nicer, and sometimes necessary to reason properly about programs with non-determinism! Our intuition tells us that programs that return the same output with high-probability should be closer than programs whose output are different almost all the times. A distance between programs quantify this intuition.
-
+Now here comes the best part: while equivalences of automata are nice, distance between programs are even nicer, and sometimes necessary to reason properly about programs with probability and nondeterminism! Our intuition tells us that programs that return the same output with high-probability should be closer than programs whose output are different almost all the times. Distances make this intuition formal by using quantities (usually real numbers) to represent how close/far programs are.
 % Why consider metric spaces and distances between programs? Equivalence is often too coarse. In some cases we may want to know how different two programs are, e.g., the probability that they produce different outputs, or the `cost' of one optimization over another. Distances provide this quantitative measure.
 
-Consider for example the following transition system, without labels, and with state space $X = \{u,x,y,z\}$, where $z$ is a final state and $u$ is a fail state, which once reached can never be left and the system loops indefinitely.
+Consider for example the following transition system, without labels, and with state space $X = \{u,x,y,z\}$, where $\varepsilon \in [0,0.5]$, $z$ is an accepting state and $u$ is a fail state, which once reached can never be left and the system loops indefinitely.
 
 \begin{figure}[h]
     \centering
@@ -305,7 +327,8 @@ Consider for example the following transition system, without labels, and with s
 \end{figure}
 %I think that you should not bother with figures, since they are going to be scrapped with the switch to markdown for the blog post! Just put the image maybe!
 
-If we compare the behavior of $x$ and $y$, we see that they are not behaviorally equivalent. This is because in state $x$ there is always a bias towards the final state $z$ which is controlled by the value of $\epsilon$. But, they are similar in the sense that their behavioral distance is $\epsilon$. If we took $\epsilon = 0$, then they would really be behaviorally equivalent.
+If we compare the behavior of $x$ and $y$, we see that they are not behaviorally equivalent. This is because in state $x$ there is always a bias towards the accepting state $z$ which is controlled by the value of $\varepsilon$. However, we would like to say that their behavioral distance is$\varepsilon$. % But, they are similar in the sense that their \todo{ana:this sounds as if there is "the" beh.distance. AA:changed the formulation a bit...} behavioral distance is $\varepsilon$. 
+If we took $\varepsilon = 0$, then they would really be behaviorally equivalent.
 In the rest of this post, we will show how to formalize this notion of distance without losing the benefits of presentations!
 To begin with, we will need to work with monads in $\cat{1Met}$ rather than $\cat{Set}$ in order to get a notion of distance.
 
@@ -313,21 +336,21 @@ To begin with, we will need to work with monads in $\cat{1Met}$ rather than $\ca
 
 \paragraph{1-bounded metric spaces}
 
-A \textbf{1–bounded metric space} is a pair $(X, d)$ with $X$ a set and $d \colon X \times X \to [0,1]$ such that $d(x, y) = 0$ if and only if $x = y, d(x, y) = d(y, x)$, and $d(x, y) \leq d(x, z) + d(z, y)$, for all $x, y, z \in X$. A function $f \colon X \to Y$ between two 1–bounded metric spaces $(X, d_X)$ and $(Y, d_Y)$ is \textbf{non–expansive} if $$d_Y (f (x_1), f (x_2)) \leq d_X (x_1, x_2)$$ for all $x_1, x_2 \in X$. We denote with $\cat{1Met}$ the category of 1–bounded metric spaces and non–expansive maps.
+A \textbf{1-bounded metric space} is a pair $(X, d)$ with $X$ a set and $d \colon X \times X \to [0,1]$ such that $d(x, y) = 0$ if and only if $x = y, d(x, y) = d(y, x)$, and $d(x, y) \leq d(x, z) + d(z, y)$, for all $x, y, z \in X$. A function $f \colon X \to Y$ between two 1-bounded metric spaces $(X, d_X)$ and $(Y, d_Y)$ is \textbf{non-expansive} if $$d_Y (f (x_1), f (x_2)) \leq d_X (x_1, x_2)$$ for all $x_1, x_2 \in X$. We denote with $\cat{1Met}$ the category of 1-bounded metric spaces and non-expansive maps.%\todo{ana:I expect 1PMet, or PMet$_1$ -- "pseudo", no? AA:We decided to keep the notation of the paper, even if not the best...}
 
-We now need some $\cat{1Met}$ monads to replace the $\cat{Set}$-monads we used for effects. A solution is to lift $\cat{Set}$ monads! Given an endofunctor $F \colon \cat{Set} \to \cat{Set}$, if we start with a metric space $(X,d)$, the idea is to endow $F(X)$ with a metric so we can define $\hat F \colon \cat{1Met} \to \cat{1Met}$ using the same actions on objects and on arrows as in $F$. Before applying this idea to $\C$, lets start by lifting the powerset and probability distribution monads $\mathcal{P}$ and $\mathcal{D}$, modeling respectively probability and non-determinism.
-Recall that $\mathcal P$ maps sets $X$ to their powerset $\mathcal P X$, while $\mathcal D$ maps $X$ to the finitely supported probability distributions on $X$.
+We now need some $\cat{1Met}$ monads to replace the $\cat{Set}$-monads we used for effects. A solution is to lift $\cat{Set}$ monads! Given an endofunctor $F \colon \cat{Set} \to \cat{Set}$, if we start with a metric space $(X,d)$, the idea is to endow $F(X)$ with a metric so we can define $\hat F \colon \cat{1Met} \to \cat{1Met}$ using the same actions on objects and arrows as $F$. Before applying this idea to $\C$, let's start by lifting the powerset and probability distribution monads $\mathcal{P}$ and $\mathcal{D}$, modeling respectively probability and nondeterminism.
+Recall that $\mathcal P$ maps sets $X$ to their powerset $\mathcal P X$, while $\mathcal D$ maps $X$ to the set of finitely supported probability distributions on $X$.
 
 \paragraph{Lifting of $\C$.}
 
-To lift the functor $\mathcal{P}$ to $\cat{1Met}$ we need a notion of distances between subsets. Given $(X,d)$ a metric space, we talk about the distance between $A, B \subseteq X$ using the metric $d$. The idea is exactly to measure how far $A$ is from $B$ in $X$:
+To lift the functor $\mathcal{P}$ to $\cat{1Met}$ we need a notion of distances between subsets. Given a metric space $(X,d)$, we define a distance between $A, B \subseteq X$ using the metric $d$. The idea is to measure how far $A$ is from $B$ in $X$:
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.5\linewidth]{images/dist-sets.jpg}
     \label{fig:placeholder}
 \end{figure}
-where it's obvious that $A = B$ if and only if this distance is equal to zero.
+Intuitively, we want $A$ to be equal to $B$ if and only if this distance is equal to zero.
 We start with the notion of distance between a point $x \in X$ and a subset $A \subseteq X$:
 \begin{figure}[h]
     \centering
@@ -335,7 +358,7 @@ We start with the notion of distance between a point $x \in X$ and a subset $A \
     \label{fig:placeholder}
 \end{figure}
 
-\[ d(x,A) = inf\{d(x,y) : y \in A\} \]
+\[ d(A,x) = \inf\{d(x,y) : y \in A\} \]
 and continue with the distance between two subsets $A,B \subseteq X$:
 
 \begin{figure}[h]
@@ -343,16 +366,16 @@ and continue with the distance between two subsets $A,B \subseteq X$:
     \includegraphics[width=0.5\linewidth]{images/dist-sets2.jpg}
     \label{fig:placeholder}
 \end{figure}
-\[ d(A,B) = sup\{d(x,A) : x \in B\} \]
+\[ d(A,B) = \sup\{d(x,A) : x \in B\} \]
 
-Now, in order to insure symmetry, we need to compare the distances $d(A,B)$ and $d(B,A)$, resulting exactly in the definition we wanted for the first image
-\[ H(d)(A,B) = max\{d(A,B),d(B,A)\} \]
+Now, in order to ensure symmetry, we need to compare the distances $d(A,B)$ and $d(B,A)$, resulting exactly in the definition we wanted for the first image
+\[ H(d)(A,B) = \max\{d(A,B),d(B,A)\} \]
 $H(d)$ is known as the \textbf{Hausdorff lifting of $d$}.
-So, starting with a 1-bounded metric space $(X,d)$, we have that $(\mathcal{P}(X),H(d))$ is also a 1-bounded metric space.
+Finally, one can prove that, starting with a 1-bounded metric space $(X,d)$, we have that $(\mathcal{P}(X),H(d))$ is also a 1-bounded metric space.
 
-Now, for the functor $\mathcal{D}$ we need a more elaborated example (from \cite{coalg-metrics}) in order to understand the intuition behind the lifting.  
+Now, for the functor $\mathcal{D}$ we need a more elaborated example in order to understand the intuition behind the lifting (we follow \cite[Section 2.1]{coalg-metrics}).  
 
-Suppose you are the owner of three coffee roasting plants, $A,B$ and $C$, each with an adjacent café where one can taste the coffee. We let $X = \{A,B,C\}$ and consider the distributions $P \colon X \to [0,1]$ and $Q \colon X \to [0,1]$ below to model supply and demand, respectively, of the product in proportion of the total supply or demand:
+Suppose you are the owner of three coffee roasting plants, $A,B$ and $C$, each with an adjacent café where one can taste the coffee. We let $X = \{A,B,C\}$ and consider the distributions $P \colon X \to [0,1]$ and $Q \colon X \to [0,1]$ below to model supply and demand, respectively, of each product in proportion to the total supply or demand:
 
 \[\begin{array}{cccccccccc}
     & P \colon & X & \longrightarrow         &  [0,1] & & Q \colon & X & \longrightarrow         &  [0,1]\\
@@ -366,7 +389,7 @@ Suppose you are the owner of three coffee roasting plants, $A,B$ and $C$, each w
 (For the sake of simplicity,
 we assume that the total amount of production equals the amount of consumption.)
 
-We have illustrated this situation graphically below. The numbers on the edges indicate the distance between the places $A,B$ and $C$ whereas the numbers on the nodes indicate supply $P$ (upper value) and
+We have illustrated this situation graphically below. The numbers on the edges indicate the distance between the places $A$, $B$ and $C$ (the distance between a place and itself is $0$) whereas the numbers on the nodes indicate supply $P$ (upper value) and
 demand $Q$ (lower value):
 
 \begin{center}
@@ -382,30 +405,35 @@ Formally, we will have to define a function $t \colon X \times X \to [0, 1]$ whe
     \item demand is satisfied: for all $y \in X$ we must have $\sum_{x\in X} t(x, y) = Q(y)$.
 \end{itemize}
 
-In probability theory, such a function is a joint probability distribution on $X \times X$ with marginals $P$ and $Q$ and is therefore called a coupling of $P$ and $Q$. Here, we will call it a transportation plan for supply $P$ and demand $Q$ and write $T (P, Q)$ for the set of all such transportation plans.
+In probability theory, such a function is a joint probability distribution on $X \times X$ with marginals $P$ and $Q$ and is called a coupling of $P$ and $Q$. Here, we will call it a transportation plan for supply $P$ and demand $Q$ and write $T (P, Q)$ for the set of all such transportation plans.
 
-Since the cost of transporting units from a place to another is directly proportional to the distance between the places, to minimize the costs we want to minimize $\sum_{x,y \in X} t(x,y) \cdot d(x,y)$ among all possible transportation plans. Having that in mind we define
-\[ K(d)(P,Q) = min\{\sum_{x,y \in X} t(x,y) \cdot d(x,y) : t \in T (P, Q)\} \]
+Supposing the cost of transporting coffee from a place to another is directly proportional to the distance between the places, to minimize the costs we want to minimize $\sum_{x,y \in X} t(x,y) \cdot d(x,y)$ among all possible transportation plans. Having that in mind we define
+\[ K(d)(P,Q) = \inf\{\sum_{x,y \in X} t(x,y) \cdot d(x,y) : t \in T (P, Q)\} \]
 
 For a generic metric space $(X,d)$ and distributions $\varphi_1, \varphi_2 \in \mathcal{D}(X)$, we define
-\[K(d) = inf_{t \in Coup(\varphi_1,\varphi_2)} (\sum_{(x_1,x_2) \in X \times X} t(x_1,x_2) \cdot d(x_1,x_2) )\]
+\[K(d)(\varphi_1,\varphi_2) = \inf_{t \in Coup(\varphi_1,\varphi_2)} (\sum_{(x_1,x_2) \in X \times X} t(x_1,x_2) \cdot d(x_1,x_2) )\]
 where $Coup(\varphi_1, \varphi_2)$ is defined as the collection of couplings of $\varphi_1$ and $\varphi_2$, i.e., 
 $$Coup(\varphi_1, \varphi_2) = \{t \in \mathcal{D}(X \times X) : \mathcal{D}(\pi_1)(t) = \varphi_1 \text{ and } \mathcal{D}(\pi_2)(t) = \varphi_2\}$$ where $\pi_1 : X_1 \times X_2 \to X_1$ and $\pi_2 : X_1 \times X_2 \to X_2$ are the projection functions.
 $K(d)$ is known as the \textbf{Kantorovich lifting of $d$}.
 Starting with a 1-bounded metric space $(X,d)$ we thus have that $(\mathcal{D}(X),K(d))$ is also a 1-bounded metric space.
 
-Using these two liftings, we can show that $(C(X), HK(d))$ is a 1–bounded metric space. This gives us our desired $\cat{1Met}$-monad $\hat \C$, which has the same action on arrows and same unit and multiplication as the monad $\C$.
+Using these two liftings, we can show that $(C(X), HK(d))$ is a 1-bounded metric space. This gives us our desired $\cat{1Met}$-monad $\hat \C$, which has the same action on arrows and same unit and multiplication as the monad $\C$.
 
 \paragraph{What about presentations?}
 
-Now, the difference in considering program distances instead of program equivalence is expressed also algebraically. Instead of describing the axioms using equality ``$=$'', we use relations $a =_{\epsilon} b$ which we think of as saying that ``$a$ is equal to $b$ up to an error of $\epsilon$".  
+Now, the difference in considering program distances instead of program equivalence is expressed also algebraically. Instead of describing the axioms using equality ``$=$'', we use relations $a =_{\varepsilon} b$ which we think of as saying that ``$a$ is equal to $b$ up to an error of $\varepsilon$".  
 
-Without equalities, we replace sequences of equalities by quantitative inferences:
-$$\{x_i =_{\epsilon_i} y_i\}_{i\in I} \vdash s =_{\epsilon} t$$ where $\epsilon$, $\epsilon_i \in [0,1]$ and $s, t$ are terms. A quantitative inference is satisfied if, for all interpretations $\iota$ of the variables $x$, we have:
+We replace sequences of equalities by quantitative inferences:
+$$\{x_i =_{\varepsilon_i} y_i\}_{i\in I} \vdash s =_{\varepsilon} t$$ where $\varepsilon$, $\varepsilon_i \in [0,1]$ and $s, t$ are terms. 
 
-\[ \text{if } d(\iota(x_i), \iota(y_i)) \leq \epsilon_i \text{ for all } i \in I, \text{ then } (\iota(s), \iota(t)) \leq \epsilon.\]
 
-Formally, we replace algebraic theories by quantitative equational theories. For instance, the quantitative equational theory of convex semilattices has signature $\Sigma_CS = (\{\oplus\}\cup\{+_p\}_{p\in(0,1)})$ and is defined as the set of quantitative inferences derivable by the following axioms, stated for arbitrary $p, q \in (0, 1)$ and $\epsilon_1, \epsilon_2 \in [0, 1]$:
+
+% A quantitative inference is satisfied in a quantitative algebra $A$, i.e., a $\cat{1Met}$ with a space  if, for all interpretations $\iota \in A$ of the variables $x$, we have:
+
+% \[ \text{if } d(\iota(x_i), \iota(y_i)) \leq \varepsilon_i \text{ for all } i \in I, \text{ then } (\iota(s), \iota(t)) \leq \varepsilon.\]
+
+Similarly, we replace algebraic theories by quantitative equational theories.
+ For instance, the quantitative equational theory of convex semilattices has signature $\Sigma_CS = (\{\oplus\}\cup\{+_p\}_{p\in(0,1)})$ and is defined as the set of quantitative inferences derivable by the following axioms, stated for arbitrary $p, q \in (0, 1)$ and $\varepsilon_1, \varepsilon_2 \in [0, 1]$:
     we substitute every axiom $A,C,I,A_p,C_p,I_p$ and $D$ in \(\Th_{CS}\) by changing the usual equality ``$=$'' for the inference $ \emptyset \vdash $ with $=_0$
     \[\begin{aligned}
 &\text{(A)} && \emptyset \vdash x \oplus (y \oplus z) =_{0} (x \oplus y) \oplus z \\
@@ -418,14 +446,33 @@ Formally, we replace algebraic theories by quantitative equational theories. For
 \end{aligned}\]
     and add the following quantitative inferences
     \[\begin{aligned}
-&\text{(H)} && \{x_1 =_{\epsilon_1} y_1, x_2 =_{\epsilon_2} y_2\} \vdash x_1 \oplus x_2 =_{max(\epsilon_1,\epsilon_2)} y_1 \oplus y_2 \\
-&\text{(K)} && \{x_1 =_{\epsilon_1} y_1, x_2 =_{\epsilon_2} y_2\} \vdash x_1 +_p x_2 =_{p \cdot \epsilon_1 + (1-p) \cdot \epsilon_2} y_1 +_p y_2 
+&\text{(H)} && \{x_1 =_{\varepsilon_1} y_1, x_2 =_{\varepsilon_2} y_2\} \vdash x_1 \oplus x_2 =_{max(\varepsilon_1,\varepsilon_2)} y_1 \oplus y_2 \\
+&\text{(K)} && \{x_1 =_{\varepsilon_1} y_1, x_2 =_{\varepsilon_2} y_2\} \vdash x_1 +_p x_2 =_{p \cdot \varepsilon_1 + (1-p) \cdot \varepsilon_2} y_1 +_p y_2 
 \end{aligned}\]
 
+A model of a quantitative equational theories is then a quantitative algebra: a $\cat{1Met}$ space $A$ with a non-expensive function for all symbols of the theory, such that for every inference $\{x_i =_{\varepsilon_i} y_i\}_{i\in I} \vdash s =_{\varepsilon} t$, and variables $x_i, y_i$ in $A$, if $d(x_i, y_i) \leq \varepsilon_i$ for all $i \in I$, then $d(s,t)\leq \varepsilon$ when we interpret the variables $x_i$ and $y_i$ by the corresponding points in $A$, and the symbols by the corresponding functions on $A$.
 
 \paragraph{Lifting termination.}
 
-As in the $\cat{Set}$ case, the termination monad $+\hat 1$ on $\cat{1Met}$ also admits a monad composition law with any  $\cat{1Met}$-monad, and we thus get a monad $\hat C(+ \hat 1)$ for free, which is also nicely presented by the quantitative equational theory of \emph{pointwise} convex semilattices, mirroring the $\cal{Set}$-case! For the $\mathcal C^\downarrow$ monad, much more work is needed to show that there is a $\cat{1Met}$-monad $\hat{\mathcal C^\downarrow}$ presented by quantitative equational theory of pointed convex semilattices with the additional quantitative inference $(\bot_Q) = \{\vdash x \oplus \star =_0 x\}$. As for the $\mathcal C+1$ monad, however, if we also add the quantitative inference $(BH_Q) = \{\emptyset \vdash x+_p \star =_0 \star \mid  p \in (0, 1)\}$, then the result theory collapses: the quantitative $\{x =_\epsilon y\}_{\epsilon>0} \vdash x =_0 y$ is derivable.
+
+As in the $\cat{Set}$ case, there is also a termination monad $+\hat 1$ that can be composed with any $\cat{1Met}$ monad. We thus get a monad $\hat \C(+ \hat 1)$ for free.
+
+% As in the $\cat{Set}$ case, the termination monad $+\hat 1$ on $\cat{1Met}$ also admits a monad distributive law with any  $\cat{1Met}$-monad, and we thus get a monad $\hat \C(+ \hat 1)$ for free. We denote $in_l \colon X \to X + \hat 1$ and $in_r \colon \hat 1 \to X + \hat 1$ the left and right coproduct injections, respectively. Then we can use the distributive law
+% \[ \lambda \colon [\hat{\C} (in_l), \eta^{\hat{\C}}_{X+\hat{1}} \circ in_r] \]
+% given by the diagram
+% \[% https://tikzcd.yichuanshen.de/#N4Igdg9gJgpgziAXAbVABwnAlgFyxMJZARgBoAGAXVJADcBDAGwFcYkQAdDgC3p2C4BhAL4AKABoBqLr37FhAShDDS6TLnyEU5UsWp0mrdjL4COIiUpVrseAkTJ6aDFm0ScepoWPELpnuWFlVRAMW00iACZdfRcjdxNA5X0YKABzeCJQADMAJwgAWyQyEBwIJB0DV2MAswssMAB9RisQvMKkaNLyxErGBrcQKHo4blSQGkZ6ACMYRgAFdTstEFysNO4cCar4jymC6eHgnPyixABmGjKKyZm5xfD7dzWNredDQa4YHHoAPTNZHVhI1gFJEsB5MJhAACLgAYywuTh0IajVyxxA7TOJWuiEi1kxpyQl26nWElGEQA
+% \begin{tikzcd}
+%                                                    & \hat{\C}(X+\hat{1})                               &                                                                         \\
+% \hat{\C}(X) \arrow[ru, "\hat{\C}(in_l)"] \arrow[r] & \hat{\C}(X)+\hat{1} \arrow[u, "\lambda"', dashed] & \hat{1} \arrow[lu, "\eta^{\hat{\C}_{X+\hat{1}}} \circ in_r"'] \arrow[l]
+% \end{tikzcd}\]
+% We have that $\hat{\C}(+\hat{1})$ is a monad with 
+% $$\eta^{\hat{\C}(+\hat{1})} = \eta^{\hat{\C}} * \eta^{\hat{1}} ~\text{ and }~\mu^{\hat{\C}(+\hat{1})} = \mu^{\hat{\C}}*\mu^{\hat{1}} \circ \hat{\C} \lambda (+\hat{1})$$
+% where $*$ is the horizontal composition of natural transformations, resulting in
+% \[\eta^{\hat{\C}(+\hat{1})} \colon X \xrightarrow{\eta^{\hat{\C}_X}} \hat{\C}(X) \xrightarrow{\hat{\C}(\eta^{+\hat{1}})} \hat{\C}(X + \hat{1})\]
+% and $\mu^{\hat{\C}(+\hat{1})}$ given by
+% \[ \hat{\C}(\hat{\C}(X+\hat{1}) + \hat{1}) \xrightarrow{\hat{\C}(\lambda_{X+\hat{1}})} \hat{\C}(\hat{\C}((X + \hat{1})+\hat{1})) \xrightarrow{\mu^{\hat{\C}}_{(X+\hat{1})+\hat{1}}} \hat{\C}((X + \hat{1})+\hat{1}) \xrightarrow{\hat{\C}(\mu^{+\hat{1}}_{X})} \hat{\C}(X+\hat{1})\]
+
+$\hat{\C}(+\hat{1})$ is also nicely presented by the quantitative equational theory of \emph{pointwise} convex semilattices, mirroring the $\cat{Set}$-case! For the $\mathcal C^\downarrow$ monad, more work is needed to provide a semantic description of the $\cat{1Met}$-monad $\hat{\mathcal C^\downarrow}$ presented by quantitative equational theory of pointed convex semilattices with the additional quantitative inference $(\bot_Q) = \{\vdash x \oplus \star =_0 x\}$. As for the $\mathcal C+1$ monad, however, if we also add the quantitative inference $(BH_Q) = \{\emptyset \vdash x+_p \star =_0 \star \mid  p \in (0, 1)\}$, then the result theory collapses: the quantitative $\emptyset \vdash x =_0 y$ is derivable, i.e. the underlying metric space is a point!
 
 
 %\todo{For later, might be intersting to consider whether adding back A and O works in 1Met}
