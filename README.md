@@ -1,1 +1,1 @@
-Attention! This repo is still being updated, this is not the final version of the blog post.
+This repo contains our blog post in markdown/itex format. Only the link of the associated blog post is to add, when publishing 
