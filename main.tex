@@ -317,7 +317,7 @@ The resulting monads are called $\mathcal C+1$ and $\mathcal C^\downarrow$.
 Now here comes the best part: while equivalences of automata are nice, distance between programs are even nicer, and sometimes necessary to reason properly about programs with probability and nondeterminism! Our intuition tells us that programs that return the same output with high-probability should be closer than programs whose output are different almost all the times. Distances make this intuition formal by using quantities (usually real numbers) to represent how close/far programs are.
 % Why consider metric spaces and distances between programs? Equivalence is often too coarse. In some cases we may want to know how different two programs are, e.g., the probability that they produce different outputs, or the `cost' of one optimization over another. Distances provide this quantitative measure.
 
-Consider for example the following transition system, without labels, and with state space $X = \{u,x,y,z\}$, where $\varepsilon \in [0,0.5]$, $z$ is an accepting state and $u$ is a fail state, which once reached can never be left and the system loops indefinitely.
+Consider for example the following transition system (from \cite[Section 2]{coalg-metrics}), without labels, and with state space $X = \{u,x,y,z\}$, where $\varepsilon \in [0,0.5]$, $z$ is an accepting state and $u$ is a fail state, which once reached can never be left and the system loops indefinitely.
 
 \begin{figure}[h]
     \centering
@@ -366,7 +366,9 @@ and continue with the distance between two subsets $A,B \subseteq X$:
     \includegraphics[width=0.5\linewidth]{images/dist-sets2.jpg}
     \label{fig:placeholder}
 \end{figure}
-\[ d(A,B) = \sup\{d(x,A) : x \in B\} \]
+\newpage
+\[ d(A,B) = \sup\{d(A,x) : x \in B\} \]
+
 
 Now, in order to ensure symmetry, we need to compare the distances $d(A,B)$ and $d(B,A)$, resulting exactly in the definition we wanted for the first image
 \[ H(d)(A,B) = \max\{d(A,B),d(B,A)\} \]
@@ -375,7 +377,7 @@ Finally, one can prove that, starting with a 1-bounded metric space $(X,d)$, we 
 
 Now, for the functor $\mathcal{D}$ we need a more elaborated example in order to understand the intuition behind the lifting (we follow \cite[Section 2.1]{coalg-metrics}).  
 
-Suppose you are the owner of three coffee roasting plants, $A,B$ and $C$, each with an adjacent café where one can taste the coffee. We let $X = \{A,B,C\}$ and consider the distributions $P \colon X \to [0,1]$ and $Q \colon X \to [0,1]$ below to model supply and demand, respectively, of each product in proportion to the total supply or demand:
+Suppose you are the owner of three coffee roasting plants, $A,B$ and $C$, each with an adjacent café where one can taste the coffee. We let $X = \{A,B,C\}$ be the set of places and consider the distributions $P \colon X \to [0,1]$ and $Q \colon X \to [0,1]$ below to model supply and demand, respectively, of each product in proportion to the total supply or demand:
 
 \[\begin{array}{cccccccccc}
     & P \colon & X & \longrightarrow         &  [0,1] & & Q \colon & X & \longrightarrow         &  [0,1]\\
@@ -413,24 +415,24 @@ Supposing the cost of transporting coffee from a place to another is directly pr
 For a generic metric space $(X,d)$ and distributions $\varphi_1, \varphi_2 \in \mathcal{D}(X)$, we define
 \[K(d)(\varphi_1,\varphi_2) = \inf_{t \in Coup(\varphi_1,\varphi_2)} (\sum_{(x_1,x_2) \in X \times X} t(x_1,x_2) \cdot d(x_1,x_2) )\]
 where $Coup(\varphi_1, \varphi_2)$ is defined as the collection of couplings of $\varphi_1$ and $\varphi_2$, i.e., 
-$$Coup(\varphi_1, \varphi_2) = \{t \in \mathcal{D}(X \times X) : \mathcal{D}(\pi_1)(t) = \varphi_1 \text{ and } \mathcal{D}(\pi_2)(t) = \varphi_2\}$$ where $\pi_1 : X_1 \times X_2 \to X_1$ and $\pi_2 : X_1 \times X_2 \to X_2$ are the projection functions.
+$$Coup(\varphi_1, \varphi_2) = \{t \in \mathcal{D}(X \times X) : \mathcal{D}(\pi_1)(t) = \varphi_1 \text{ and } \mathcal{D}(\pi_2)(t) = \varphi_2\}$$ where $\pi_1 : X_1 \times X_2 \to X_1$ and $\pi_2 : X_1 \times X_2 \to X_2$ are the projection functions. These are the generic equivalent of using all the supplies and satisfying all demands as exemplified above.
 $K(d)$ is known as the \textbf{Kantorovich lifting of $d$}.
-Starting with a 1-bounded metric space $(X,d)$ we thus have that $(\mathcal{D}(X),K(d))$ is also a 1-bounded metric space.
+Starting with a 1-bounded metric space $(X,d)$, one can prove that $(\mathcal{D}(X),K(d))$ is also a 1-bounded metric space.
 
-Using these two liftings, we can show that $(C(X), HK(d))$ is a 1-bounded metric space. This gives us our desired $\cat{1Met}$-monad $\hat \C$, which has the same action on arrows and same unit and multiplication as the monad $\C$.
+Since $\C(X) \subseteq \mathcal{P}\mathcal{D}(X)$ we can use these two liftings to define a distance function for $\C(X)$, that is we can show that $(C(X), HK(d))$ is a 1-bounded metric space. This gives us our desired $\cat{1Met}$-monad $\hat \C$, which has the same action on arrows and same unit and multiplication as the monad $\C$.
 
 \paragraph{What about presentations?}
 
 Now, the difference in considering program distances instead of program equivalence is expressed also algebraically. Instead of describing the axioms using equality ``$=$'', we use relations $a =_{\varepsilon} b$ which we think of as saying that ``$a$ is equal to $b$ up to an error of $\varepsilon$".  
 
-We replace sequences of equalities by quantitative inferences:
+We replace equalities by quantitative inferences:
 $$\{x_i =_{\varepsilon_i} y_i\}_{i\in I} \vdash s =_{\varepsilon} t$$ where $\varepsilon$, $\varepsilon_i \in [0,1]$ and $s, t$ are terms. 
 
 
 
-% A quantitative inference is satisfied in a quantitative algebra $A$, i.e., a $\cat{1Met}$ with a space  if, for all interpretations $\iota \in A$ of the variables $x$, we have:
+A quantitative inference is satisfied in a quantitative algebra $(A, {f^A}_{f \in \Sigma},d)$, where the maps $f^A$ are non-expansive and $(A,d) \in \cat{1Met}$, if, for all $x_i,y_i,s,t \in A$, we have:
 
-% \[ \text{if } d(\iota(x_i), \iota(y_i)) \leq \varepsilon_i \text{ for all } i \in I, \text{ then } (\iota(s), \iota(t)) \leq \varepsilon.\]
+\[ \text{if } d(x_i, y_i) \leq \varepsilon_i \text{ for all } i \in I, \text{ then } (s, t) \leq \varepsilon.\]
 
 Similarly, we replace algebraic theories by quantitative equational theories.
  For instance, the quantitative equational theory of convex semilattices has signature $\Sigma_CS = (\{\oplus\}\cup\{+_p\}_{p\in(0,1)})$ and is defined as the set of quantitative inferences derivable by the following axioms, stated for arbitrary $p, q \in (0, 1)$ and $\varepsilon_1, \varepsilon_2 \in [0, 1]$:
@@ -472,8 +474,15 @@ As in the $\cat{Set}$ case, there is also a termination monad $+\hat 1$ that can
 % and $\mu^{\hat{\C}(+\hat{1})}$ given by
 % \[ \hat{\C}(\hat{\C}(X+\hat{1}) + \hat{1}) \xrightarrow{\hat{\C}(\lambda_{X+\hat{1}})} \hat{\C}(\hat{\C}((X + \hat{1})+\hat{1})) \xrightarrow{\mu^{\hat{\C}}_{(X+\hat{1})+\hat{1}}} \hat{\C}((X + \hat{1})+\hat{1}) \xrightarrow{\hat{\C}(\mu^{+\hat{1}}_{X})} \hat{\C}(X+\hat{1})\]
 
-$\hat{\C}(+\hat{1})$ is also nicely presented by the quantitative equational theory of \emph{pointwise} convex semilattices, mirroring the $\cat{Set}$-case! For the $\mathcal C^\downarrow$ monad, more work is needed to provide a semantic description of the $\cat{1Met}$-monad $\hat{\mathcal C^\downarrow}$ presented by quantitative equational theory of pointed convex semilattices with the additional quantitative inference $(\bot_Q) = \{\vdash x \oplus \star =_0 x\}$. As for the $\mathcal C+1$ monad, however, if we also add the quantitative inference $(BH_Q) = \{\emptyset \vdash x+_p \star =_0 \star \mid  p \in (0, 1)\}$, then the result theory collapses: the quantitative $\emptyset \vdash x =_0 y$ is derivable, i.e. the underlying metric space is a point!
-
+$\hat{\C}(+\hat{1})$ is also nicely presented by the quantitative equational theory of \emph{pointwise} convex semilattices, mirroring the $\cat{Set}$-case! For the $\mathcal C^\downarrow$ monad, more work is needed to provide a semantic description of the $\cat{1Met}$-monad $\hat{\mathcal C^\downarrow}$ presented by quantitative equational theory of pointed convex semilattices with the additional quantitative inference 
+\[\begin{aligned}
+&(\bot_\text{Q}) && \emptyset \vdash x \oplus \star =_0 x. 
+\end{aligned}\]
+As for the $\mathcal C+1$ monad, however, if we also add the quantitative inference
+\[\begin{aligned}
+&(\text{BH}_\text{Q}) && \emptyset \vdash x+_p \star =_0 \star 
+\end{aligned}\]
+for $p \in (0,1)$, then the result theory collapses: the quantitative $\emptyset \vdash x =_0 y$ is derivable, i.e. the underlying metric space is a point!
 
 %\todo{For later, might be intersting to consider whether adding back A and O works in 1Met}
 
