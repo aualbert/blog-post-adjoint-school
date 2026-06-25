@@ -67,7 +67,7 @@ However, there are different ways to model termination with the monad $\mathcal{
 
 This is another point where algebraic presentations shine: it is easy to add additional axioms to the theory of pointed convex semilattices to refine the meaning of termination, and it again gives a presentation of some monad. However, there is not always a nice semantic description of these monads... Nevertheless, it does when adding either the bottom axiom $(\bot)$, or both $(\bot)$ and the black hole axiom $(BH)$!
 $$\begin{aligned}
-    &\{x \oplus \star = x\}\ (\bot) &\{x +_p \star = \star \mid p \in (0, 1)\}\ (BH)
+    &x \oplus \star = x\ (\bot) &x +_p \star = \star \mid p \in (0, 1)\ (BH)
 \end{aligned}$$
 The resulting monads are called $\mathcal{C}+1$ and $\mathcal{C}^\downarrow$.
 
@@ -154,7 +154,7 @@ $$Coup(\varphi_1, \varphi_2) = \{t \in \mathcal{D}(X \times X) : \mathcal{D}(\pi
 $K(d)$ is known as the **Kantorovich lifting of $d$**.
 Starting with a 1-bounded metric space $(X,d)$, one can prove that $(\mathcal{D}(X),K(d))$ is also a 1-bounded metric space.
 
-Since $\mathcal{C}(X) \subseteq \mathcal{P}\mathcal{D}(X)$ we can use these two liftings to define a distance function for $\mathcal{C}(X)$, that is we can show that $(C(X), HK(d))$ is a 1-bounded metric space. This gives us our desired ${1Met}$-monad $\hat \mathcal{C}$, which has the same action on arrows and same unit and multiplication as the monad $\mathcal{C}$.
+Since $\mathcal{C}(X) \subseteq \mathcal{P}\mathcal{D}(X)$ we can use these two liftings to define a distance function for $\mathcal{C}(X)$, that is we can show that $(C(X), HK(d))$ is a 1-bounded metric space. This gives us our desired ${1Met}$-monad $\hat{\mathcal{C}}$, which has the same action on arrows and same unit and multiplication as the monad $\mathcal{C}$.
 
 **What about presentations?**
 
@@ -188,13 +188,13 @@ and add the following quantitative inferences
 \end{aligned}
 \]
 
-A model of a quantitative equational theories is then a quantitative algebra: a ${1Met}$ space $A$ with a non-expensive function for all symbols of the theory, such that for every inference $\{x_i =_{\varepsilon_i} y_i\}_{i\in I} \vdash s =_{\varepsilon} t$, and variables $x_i, y_i$ in $A$, if $d(x_i, y_i) \leq \varepsilon_i$ for all $i \in I$, then $d(s,t)\leq \varepsilon$ when we interpret the variables $x_i$ and $y_i$ by the corresponding points in $A$, and the symbols by the corresponding functions on $A$.
+A model of a quantitative equational theories is then a quantitative algebra: a ${1Met}$ space $A$ with a non-expensive function for all symbols of the theory, such that for every inference $\{x_i =_{\varepsilon_i} y_i\}_{i\in I} \vdash s =_{\varepsilon} t$, and variables $x_i, y_i$ in $A$, if $d(x_i, y_i) \leq \varepsilon_i$ for all $i \in I$, then $d(s,t)\leq \varepsilon$ when we interpret the variables $x_i$ and $y_i$ by the corresponding points in $A$, and the symbols by the corresponding functions on $A$. See [5] for more details.
 
 **Lifting termination.**
 
-As in the ${Set}$ case, there is also a termination monad $+\hat 1$ that can be composed with any ${1Met}$ monad. We thus get a monad $\hat \mathcal{C}(+ \hat 1)$ for free.
+As in the ${Set}$ case, there is also a termination monad $+\hat 1$ that can be composed with any ${1Met}$ monad. We thus get a monad $\hat{\mathcal{C}} (+ \hat 1)$ for free.
 
-$\hat{\mathcal{C}}(+\hat{1})$ is also nicely presented by the quantitative equational theory of *pointwise* convex semilattices, mirroring the ${Set}$-case! For the $\mathcal{C}^\downarrow$ monad, more work is needed to provide a semantic description of the ${1Met}$-monad $\hat{\mathcal{C}^\downarrow}$ presented by quantitative equational theory of pointed convex semilattices with the additional quantitative inference 
+$\hat{\mathcal{C}} (+\hat{1})$ is also nicely presented by the quantitative equational theory of *pointwise* convex semilattices, mirroring the ${Set}$-case! For the $\mathcal{C}^\downarrow$ monad, more work is needed to provide a semantic description of the ${1Met}$-monad $\hat{\mathcal{C}^\downarrow}$ presented by quantitative equational theory of pointed convex semilattices with the additional quantitative inference 
 \[
 \begin{aligned}
 &(\bot_\text{Q}) && \emptyset \vdash x \oplus \star =_0 x. 
@@ -213,6 +213,8 @@ for $p \in (0,1)$, then the result theory collapses: the quantitative $\emptyset
 [2] Coalgebraic Behavioral Metrics, by Paolo Baldan, Filippo Bonchi, Henning Kerstan and Barbara König
 
 [3] Combining Nondeterminism, Probability, and
-Termination: Equational and Metric Reasoning, by Matteo Mio, Ralph Sarkis andValeria Vignudelli
+Termination: Equational and Metric Reasoning, by Matteo Mio, Ralph Sarkis and Valeria Vignudelli
 
 [4] Optimal Transport – Old and New, by Cédric Villani
+
+[5] Quantitative Algebraic Reasoning, by Radu Mardare, Prakash Panangaden and Gordon D. Plotkin
